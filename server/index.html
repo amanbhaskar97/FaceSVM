@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Celebrity Classifier</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            color: #333;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7e7e7;
+            border-radius: 5px;
+            white-space: pre-wrap; /* Ensure long JSON results wrap */
+        }
+        #imageForm {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: 0 auto;
+        }
+        #imageInput {
+            display: block;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sports Celebrity Image Classifier</h1>
+    <form id="imageForm">
+        <input type="file" id="imageInput" accept="image/*" required><br><br>
+        <button type="submit">Classify Image</button>
+    </form>
+    
+    <h2>Classification Result:</h2>
+    <pre id="result">Results will appear here after classification...</pre>
+
+    <script>
+        // Handle form submission
+        document.getElementById('imageForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const fileInput = document.getElementById('imageInput');
+            const file = fileInput.files[0]; // Get the selected file
+
+            if (file) {
+                const reader = new FileReader(); // Create FileReader to read the image
+                reader.onload = function() {
+                    const base64Image = reader.result; // Get base64 data of the image
+
+                    // Send the base64 image data to the Flask backend
+                    fetch('/classify_image', {
+                        method: 'POST',
+                        body: new URLSearchParams({ 'image_data': base64Image }),
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded' // Set content type for the request
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display classification result
+                        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                    })
+                    .catch(error => {
+                        document.getElementById('result').textContent = 'Error: ' + error; // Handle any errors
+                    });
+                };
+                reader.readAsDataURL(file); // Read the file as a base64 string
+            }
+        });
+    </script>
+</body>
+</html>
